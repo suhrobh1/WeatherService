@@ -10,7 +10,7 @@ const mockWeatherData = (city, dates) => {
   }));
 };
 
-app.post("/weather", (req, res) => {
+app.post("/forecast", (req, res) => {
   const { city, dates } = req.body;
 
   if (!city || !dates || !Array.isArray(dates)) {
