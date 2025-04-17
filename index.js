@@ -12,12 +12,13 @@ const mockWeatherData = (city, dates) => {
 
 app.post("/forecast", (req, res) => {
   const { city, dates } = req.body;
-
+  console.log("req.body:", req.body);
   if (!city || !dates || !Array.isArray(dates)) {
     return res.status(400).json({ error: "Invalid request format" });
   }
 
   const temps = mockWeatherData(city, dates);
+  console.log("Forecast is:", temps);
   res.json({ city, temps });
 });
 
