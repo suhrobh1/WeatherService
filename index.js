@@ -19,11 +19,19 @@ const fetchWeatherData = async (latitude, longitude, startDate, endDate) => {
 
 // Dummy function to get coordinates for a city (replace with a real geocoding service)
 const getCityCoordinates = async (city) => {
-
-  const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
-  const geoData = await geoRes.json();
-  const { latitude, longitude } = geoData.results[0];
-  return latitude, longitude
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
+    const geoData = await geoRes.json();
+    if (geoData.results && geoData.results.length > 0) {
+      const { latitude, longitude } = geoData.results[0];
+      return { latitude, longitude }; // Return an object
+    } else {
+      throw new Error(`Coordinates for "${city}" not found.`);
+    }
+  } catch (error) {
+    console.error("Error fetching coordinates:", error);
+    throw new Error(`Failed to fetch coordinates for "${city}"`);
+  }
 };
 
 app.post("/forecast", async (req, res) => {
