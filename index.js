@@ -19,16 +19,11 @@ const fetchWeatherData = async (latitude, longitude, startDate, endDate) => {
 
 // Dummy function to get coordinates for a city (replace with a real geocoding service)
 const getCityCoordinates = async (city) => {
-  // In a real application, you would use a geocoding API
-  // to get latitude and longitude from the city name.
-  // This is a placeholder for demonstration purposes.
-  if (city.toLowerCase() === 'silver firs') {
-    return { latitude: 47.9031, longitude: -122.1659 }; // Example coordinates for Silver Firs, WA
-  } else if (city.toLowerCase() === 'berlin') {
-    return { latitude: 52.52, longitude: 13.41 };
-  } else {
-    throw new Error(`Coordinates for "${city}" not found.`);
-  }
+
+  const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
+  const geoData = await geoRes.json();
+  const { latitude, longitude } = geoData.results[0];
+  return latitude, longitude
 };
 
 app.post("/forecast", async (req, res) => {
