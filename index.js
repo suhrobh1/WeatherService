@@ -1,42 +1,38 @@
 const express = require("express");
-const cors = require('cors'); // Good practice for microservices
+const cors = require('cors');
 const app = express();
 
 app.use(express.json());
-app.use(cors()); // Enable CORS for requests from your main app
+app.use(cors());
 
-const mockWeatherDataAsync = (city, dates) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const data = dates.map((date) => ({
-        date,
-        temperature: Math.floor(Math.random() * 15) + 10,
-      }));
-      resolve(data);
-    }, 500); // Simulate a 500ms delay
-  });
+const generateForecastData = (city, fromDate, toDate) => {
+  const startDate = new Date(fromDate);
+  const endDate = new Date(toDate);
+  const forecastData = [];
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    const formattedDate = currentDate.toISOString().split('T')[0];
+    forecastData.push({
+      date: formattedDate,
+      temperature: Math.floor(Math.random() * 15) + 10,
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return forecastData;
 };
 
-app.post("/forecast", async (req, res) => {
-  const { city, dates } = req.body;
-  console.log("Received forecast request for:", { city, dates });
+app.post("/forecast", (req, res) => {
+  const { city, fromDate, toDate } = req.body;
+  console.log("Microservice received:", { city, fromDate, toDate });
 
-  if (!city || !dates || !Array.isArray(dates)) {
-    return res.status(400).json({ error: "Invalid request format: city and an array of dates are required" });
+  if (!city || !fromDate || !toDate) {
+    return res.status(400).json({ error: "Invalid request format: city, fromDate, and toDate are required" });
   }
 
-  if (dates.length === 0) {
-    return res.json({ city, temps: [] }); // Handle empty dates array
-  }
-
-  try {
-    const temps = await mockWeatherDataAsync(city, dates);
-    console.log("Forecast generated:", temps);
-    res.json({ city, temps });
-  } catch (error) {
-    console.error("Error processing forecast request:", error);
-    res.status(500).json({ error: "Failed to retrieve forecast data" });
-  }
+  const temps = generateForecastData(city, fromDate, toDate);
+  console.log("Microservice generated forecast:", temps);
+  res.json({ city, temps });
 });
 
 app.get("/health", (req, res) => {
