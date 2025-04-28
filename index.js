@@ -6,6 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+
 const fetchWeatherData = async (latitude, longitude, startDate, endDate) => {
   try {
     console.log("In weather microservice!, inside fetchWeatherData", latitude, longitude, startDate, endDate);
@@ -48,36 +49,65 @@ app.post("/forecast", async (req, res) => {
   //   return res.status(400).json({ error: "Invalid request format: city, fromDate, and toDate are required" });
   // }
 
+
+
   try {
-
-    
-    const { latitude, longitude } = await getCityCoordinates(city);
+    //const { latitude, longitude } = await getCityCoordinates(city);
     // console.log("In weather microservice!, lat and lon", latitude, longitude);
+    // console.log("lat lon", latitude, longitude)
+    // const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
+    // console.log("In weather microservice!, weatherData", weatherData);
     
-    
+    if (city){
+      const { latitude, longitude } = await getCityCoordinates(city);
+      console.log("lat lon", latitude, longitude)
+      const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
+      console.log("In weather microservice (if city)!, weatherData", weatherData);
+      console.log("Microservice fetched forecast:", forecastProcessor(weatherData));
+      if (!weatherData) {
+        return res.status(500).json({ error: "Failed to retrieve weather data." });
+      }
 
-    console.log("lat lon", latitude, longitude)
-    const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
-    console.log("In weather microservice!, weatherData", weatherData);
-  
-    
-    if (!weatherData) {
-      return res.status(500).json({ error: "Failed to retrieve weather data." });
+      res.json({ city, forecast: forecastProcessor(weatherData) });  
+
+    } else if (latitude && longitude){
+      const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
+      console.log("In weather microservice (if lat and lon)!, weatherData", weatherData);
+      console.log("Microservice fetched forecast:", forecastProcessor(weatherData));
+      if (!weatherData) {
+        return res.status(500).json({ error: "Failed to retrieve weather data." });
+      }
+
+      res.json({ city, forecast: forecastProcessor(weatherData) });  
+
+
+    }else{
+      return res.status(400).json({ error: "City or Latitude/Longitude is required! " });
     }
 
-    const forecastData = weatherData.daily.time.map((time, index) => ({
-      time: time, // The date string
-      maxTemperature: weatherData.daily.temperature_2m_max[index],
-      minTemperature: weatherData.daily.temperature_2m_min[index],
-      precipitationProbability: weatherData.daily.precipitation_probability_max[index],
-      cloudCover: weatherData.daily.cloud_cover_mean[index],
-      temperatureUnit: weatherData.daily_units.temperature_2m_max, // Example unit
-      precipitationProbabilityUnit: weatherData.daily_units.precipitation_probability_max,
-      cloudCoverUnit: weatherData.daily_units.cloud_cover_mean,
-    }));
 
-    console.log("Microservice fetched forecast:", forecastData);
-    res.json({ city, forecast: forecastData }); // Renamed 'temps' to 'forecast' for clarity
+
+    
+  
+
+    // const forecastData = weatherData.daily.time.map((time, index) => ({
+    //   time: time, // The date string
+    //   maxTemperature: weatherData.daily.temperature_2m_max[index],
+    //   minTemperature: weatherData.daily.temperature_2m_min[index],
+    //   precipitationProbability: weatherData.daily.precipitation_probability_max[index],
+    //   cloudCover: weatherData.daily.cloud_cover_mean[index],
+    //   temperatureUnit: weatherData.daily_units.temperature_2m_max, // Example unit
+    //   precipitationProbabilityUnit: weatherData.daily_units.precipitation_probability_max,
+    //   cloudCoverUnit: weatherData.daily_units.cloud_cover_mean,
+    // }));
+
+    // console.log("Microservice fetched forecast:", forecastData);
+    // res.json({ city, forecast: forecastData });  
+
+
+    
+
+
 
   } catch (error) {
     console.error("Error processing forecast request:", error);
@@ -85,11 +115,32 @@ app.post("/forecast", async (req, res) => {
   }
 });
 
+const forecastProcessor = (weatherData) => {
+
+  const forecastData = weatherData.daily.time.map((time, index) => ({
+    time: time, // The date string
+    maxTemperature: weatherData.daily.temperature_2m_max[index],
+    minTemperature: weatherData.daily.temperature_2m_min[index],
+    precipitationProbability: weatherData.daily.precipitation_probability_max[index],
+    cloudCover: weatherData.daily.cloud_cover_mean[index],
+    temperatureUnit: weatherData.daily_units.temperature_2m_max, // Example unit
+    precipitationProbabilityUnit: weatherData.daily_units.precipitation_probability_max,
+    cloudCoverUnit: weatherData.daily_units.cloud_cover_mean,
+  }));
+  
+  return forecastData
+
+}
+
+
+
+
+
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Weather microservice running on port ${PORT}`);
 });
