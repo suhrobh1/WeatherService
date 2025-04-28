@@ -40,21 +40,24 @@ const getCityCoordinates = async (city) => {
 };
 
 app.post("/forecast", async (req, res) => {
-  const { city, fromDate, toDate } = req.body;
+  const { city, fromDate, toDate, latitude, longitude} = req.body;
   
   console.log("Microservice received:", { city, fromDate, toDate });
 
-  if (!city || !fromDate || !toDate) {
-    return res.status(400).json({ error: "Invalid request format: city, fromDate, and toDate are required" });
-  }
+  // if (!city || !fromDate || !toDate) {
+  //   return res.status(400).json({ error: "Invalid request format: city, fromDate, and toDate are required" });
+  // }
 
   try {
-    // console.log("In weather microservice!")
+
+    if(city){
     const { latitude, longitude } = await getCityCoordinates(city);
     // console.log("In weather microservice!, lat and lon", latitude, longitude);
     const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
+    }else{
+    const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
     console.log("In weather microservice!, weatherData", weatherData);
-
+    }
     if (!weatherData) {
       return res.status(500).json({ error: "Failed to retrieve weather data." });
     }
