@@ -55,6 +55,8 @@ app.post("/forecast", async (req, res) => {
     // console.log("In weather microservice!, lat and lon", latitude, longitude);
     const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
     }else{
+
+    console.log("lat lon", latitude, longitude)
     const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
     console.log("In weather microservice!, weatherData", weatherData);
     }
