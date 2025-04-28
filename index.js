@@ -42,7 +42,7 @@ const getCityCoordinates = async (city) => {
 app.post("/forecast", async (req, res) => {
   const { city, fromDate, toDate, latitude, longitude} = req.body;
   
-  console.log("Microservice received:", { city, fromDate, toDate });
+  console.log("Microservice received:", { city, fromDate, toDate, latitude, longitude });
 
   // if (!city || !fromDate || !toDate) {
   //   return res.status(400).json({ error: "Invalid request format: city, fromDate, and toDate are required" });
