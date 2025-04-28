@@ -50,18 +50,17 @@ app.post("/forecast", async (req, res) => {
 
   try {
 
-    if(city){
+    
     const { latitude, longitude } = await getCityCoordinates(city);
     // console.log("In weather microservice!, lat and lon", latitude, longitude);
     
-    }else{
+    
 
     console.log("lat lon", latitude, longitude)
     const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
     console.log("In weather microservice!, weatherData", weatherData);
-    }
+  
     
-    const weatherData = await fetchWeatherData(latitude, longitude, fromDate, toDate);
     if (!weatherData) {
       return res.status(500).json({ error: "Failed to retrieve weather data." });
     }
